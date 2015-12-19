@@ -8,14 +8,16 @@ class Hangman
 		@display = Array.new(@word.length, '_')
 		@misses = Array.new
 		@turns = 6
+		print @display.join
+		puts
 	end
 
 	def display
 		print @display.join
 		puts
-		print @misses
+		print "Misses: #{@misses}"
 		puts
-		puts @turns
+		puts "Number of incorrect guesses left: #{@turns}"
 	end
 
 	def guess(letter)
@@ -48,12 +50,14 @@ class Hangman
 
 	def play
 		loop do 
-			puts "Enter a letter to guess (0 to quit)"
+			puts "Enter a letter to guess (0 to quit, 1 to save)"
 			letter = gets.chomp
 			if (@misses.include?(letter) || @display.include?(letter) )
 				puts "That letter has already been used! Guess again"
 			elsif letter == "0"
 				return nil
+			elsif letter == "1"
+				save_game				
 			else
 				guess(letter)
 			end
@@ -69,12 +73,27 @@ class Hangman
 	end
 end
 
+def save_game
+		Dir.mkdir("save") unless Dir.exists? "save"
+		filename = "save/save.yaml"
+		temp = YAML.dump(self)
+		File.open(filename, 'w') do |file|
+			file.puts temp
+		end
+	end
+def load_game
+	content = File.open("save/save.yaml", 'r'){|file| file.read}
+	YAML.load(content)
+end
+
+
 loop do
 	greeting = %q(
 		Welcome to Hangman!
 		What would you like to do?
-		1- New Game 
 		0- Quit
+		1- New Game 
+		2- Load Game
 		)
 	puts greeting
 	choice = gets.chomp.to_i
@@ -84,6 +103,10 @@ loop do
 	elsif choice == 0
 		puts "Goodbye!"
 		return nil
+	elsif choice == 2
+		new_game =load_game 
+		new_game.display
+		new_game.play
 	end
 
 end
